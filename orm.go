@@ -42,12 +42,6 @@ type Ormer interface {
 	// update model to database.
 	// cols set the columns those want to update.
 	// find model by Id(pk) field and update columns specified by fields, if cols is null then update all columns
-	// for example:
-	// user := User{Id: 2}
-	//	user.Langs = append(user.Langs, "zh-CN", "en-US")
-	//	user.Extra.Name = "beego"
-	//	user.Extra.Data = "orm"
-	//	num, err = Ormer.Update(&user, "Langs", "Extra")
 	Update(md interface{}, cols ...string) (int64, error)
 	// delete model in database
 	Delete(md interface{}, cols ...string) (int64, error)
