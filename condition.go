@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/k81/kate/orm/sqlbuilder"
+	"github.com/k81/orm/sqlbuilder"
 )
 
 type condValue struct {

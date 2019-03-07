@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/k81/kate/orm/sqlbuilder"
+	"github.com/k81/orm/sqlbuilder"
 )
 
 const (
