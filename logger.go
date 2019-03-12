@@ -9,6 +9,7 @@ import (
 
 // Logger is the orm logger interface
 type Logger interface {
+	Trace(ctx context.Context, msg string, keyvals ...interface{})
 	Debug(ctx context.Context, msg string, keyvals ...interface{})
 	Info(ctx context.Context, msg string, keyvals ...interface{})
 	Warning(ctx context.Context, msg string, keyvals ...interface{})
@@ -25,21 +26,30 @@ func SetLogger(l Logger) {
 
 type defaultLogger struct{}
 
+func (l *defaultLogger) Trace(ctx context.Context, msg string, keyvals ...interface{}) {
+	log.Println("[TRACE]", l.format(msg, keyvals))
+}
+
 func (l *defaultLogger) Debug(ctx context.Context, msg string, keyvals ...interface{}) {
 	log.Println("[DEBUG]", l.format(msg, keyvals))
 }
+
 func (l *defaultLogger) Info(ctx context.Context, msg string, keyvals ...interface{}) {
 	log.Println("[INFO]", l.format(msg, keyvals))
 }
+
 func (l *defaultLogger) Warning(ctx context.Context, msg string, keyvals ...interface{}) {
 	log.Println("[WARNING]", l.format(msg, keyvals))
 }
+
 func (l *defaultLogger) Error(ctx context.Context, msg string, keyvals ...interface{}) {
 	log.Println("[ERROR]", l.format(msg, keyvals))
 }
+
 func (l *defaultLogger) Fatal(ctx context.Context, msg string, keyvals ...interface{}) {
 	log.Println("[FATAL]", l.format(msg, keyvals))
 }
+
 func (l *defaultLogger) format(msg string, keyvals []interface{}) string {
 	if len(keyvals) == 0 {
 		return ""
