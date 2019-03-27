@@ -36,3 +36,9 @@ create table if not exists any_obj(
     obj text not null ,
     primary key(id)
 );
+
+create table if not exists time_obj(
+    id int unsigned not null auto_increment,
+    obj_time timestamp not null,
+    primary key(id)
+);

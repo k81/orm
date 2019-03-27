@@ -5,7 +5,9 @@ import (
 	"os"
 	"strconv"
 	"testing"
+	"time"
 
+	"github.com/go-sql-driver/mysql"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/require"
 )
@@ -274,6 +276,35 @@ func TestRawQueryRows(t *testing.T) {
 	require.Equal(t, 100, objs[0].Obj.Value)
 }
 
+type timeObj struct {
+	ID      int            `orm:"column(id);pk;auto"`
+	ObjTime mysql.NullTime `orm:"column(obj_time)"`
+}
+
+func (*timeObj) TableName() string {
+	return "time_obj"
+}
+
+func TestTime(t *testing.T) {
+	db := NewOrm(context.TODO())
+	now := time.Now()
+	obj := &timeObj{
+		ObjTime: mysql.NullTime{
+			Time:  now,
+			Valid: true,
+		},
+	}
+	_, err := db.Insert(obj)
+	require.NoError(t, err, "insert time obj")
+	obj2 := &timeObj{
+		ID: obj.ID,
+	}
+	err = db.Read(obj2, "ID")
+	require.NoError(t, err, "read time obj")
+	require.Equal(t, obj.ObjTime.Time.Local().Format(time.RFC3339), obj2.ObjTime.Time.Local().Format(time.RFC3339), "time read not equal with time inserted")
+
+}
+
 func TestMain(m *testing.M) {
 	RegisterDB("default", "mysql", "orm_test:orm_test@tcp(127.0.0.1:3306)/orm_test?timeout=5s&readTimeout=15s&writeTimeout=15s", 20, 100)
 	RegisterModel("default", new(shardedPerson))
@@ -281,6 +312,7 @@ func TestMain(m *testing.M) {
 	RegisterModel("default", new(mapJsonModel))
 	RegisterModel("default", new(dynamicModel))
 	RegisterModel("default", new(anyObj))
+	RegisterModel("default", new(timeObj))
 	DebugSQLBuilder = true
 	os.Exit(m.Run())
 }
