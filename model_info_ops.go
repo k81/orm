@@ -478,7 +478,7 @@ func (mi *modelInfo) ReadBatch(ctx context.Context, db dbQueryer, qs *querySette
 	// nolint:errcheck
 	defer rows.Close()
 
-	slice := reflect.New(ind.Type()).Elem()
+	slice := reflect.MakeSlice(ind.Type(), 0, 0)
 	for rows.Next() {
 		elem := reflect.New(mi.addrField.Elem().Type())
 		elemInd := reflect.Indirect(elem)
