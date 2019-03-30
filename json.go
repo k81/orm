@@ -84,9 +84,14 @@ func parseJSON(r io.Reader, ptr interface{}) error {
 	}
 
 	dynFieldMap := make(map[string]*json.RawMessage)
+	typ := ind.Type()
 	for i := 0; i < ind.NumField(); i++ {
-		sf := ind.Type().Field(i)
+		sf := typ.Field(i)
 		field := ind.Field(i)
+
+		if !field.CanSet() {
+			continue
+		}
 
 		dynamic := sf.Tag.Get("dynamic")
 		if dynamic == "true" {
@@ -108,6 +113,8 @@ func parseJSON(r io.Reader, ptr interface{}) error {
 				return err
 			}
 			field.Set(reflect.ValueOf(dynVal))
+		} else {
+			field.Set(reflect.Zero(field.Type())) // for json:",omitempty"
 		}
 	}
 

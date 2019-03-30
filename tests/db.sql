@@ -23,8 +23,8 @@ create table if not exists person_3 like person;
 DROP TABLE IF EXISTS `json_test`;
 create table if not exists json_test(
     id int unsigned not null auto_increment,
-    content text not null ,
-    content_ptr text not null ,
+    content VARCHAR(1024) not null default '',
+    content_ptr VARCHAR(1024) not null default '',
     primary key(id)
 );
 DROP TABLE IF EXISTS `json_test2`;
