@@ -23,8 +23,7 @@ func (jv *JSONValue) Value() (driver.Value, error) {
 			return "", nil
 		}
 
-		ind := reflect.Indirect(reflect.ValueOf(jv.addr))
-		if IsEmptyValue(ind) {
+		if IsEmptyValue(reflect.ValueOf(jv.addr)) {
 			return "", nil
 		}
 	}
