@@ -71,6 +71,7 @@ func getInnerPtrValue(ptr interface{}) (val, ind reflect.Value) {
 func parseJSON(data []byte, ptr interface{}) error {
 	data = bytes.TrimSpace(data)
 	if len(data) == 0 {
+		// ignore empty field
 		return nil
 	}
 
