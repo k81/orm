@@ -52,16 +52,38 @@ func (jv *JSONValue) Scan(value interface{}) error {
 	return parseJSON(reader, jv.addr)
 }
 
+// getInnerPtrValue
+// val: *struct{}
+// ind: struct{}
+func getInnerPtrValue(ptr interface{}) (val, ind reflect.Value) {
+	val = reflect.ValueOf(ptr)
+	ind = reflect.Indirect(val)
+
+	for {
+		switch ind.Kind() {
+		case reflect.Interface:
+			fallthrough
+		case reflect.Ptr:
+			if ind.IsNil() {
+				ind.Set(reflect.New(ind.Type().Elem()))
+			}
+			val = ind
+			ind = val.Elem()
+		default:
+			return val, ind
+		}
+	}
+}
+
 func parseJSON(r io.Reader, ptr interface{}) error {
+	val, ind := getInnerPtrValue(ptr)
+	ptr = val.Interface()
 	_, ok := ptr.(DynamicFielder)
 	if !ok {
 		return json.NewDecoder(r).Decode(ptr)
 	}
 
-	val := reflect.ValueOf(ptr)
-	ind := reflect.Indirect(val)
 	dynFieldMap := make(map[string]*json.RawMessage)
-
 	for i := 0; i < ind.NumField(); i++ {
 		sf := ind.Type().Field(i)
 		field := ind.Field(i)

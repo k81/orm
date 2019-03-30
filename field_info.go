@@ -71,10 +71,6 @@ func newFieldInfo(mi *modelInfo, field reflect.Value, sf reflect.StructField, mN
 			if !ok {
 				panic(fmt.Errorf("model must implement DynamicFielder interface: %v", mi.fullName))
 			}
-		} else {
-			if field.Kind() == reflect.Ptr {
-				panic(fmt.Errorf("json field must not be ptr: %v", fi.fullName))
-			}
 		}
 	}
 

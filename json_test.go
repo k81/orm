@@ -31,8 +31,9 @@ func (c *jsonContent) NewDynamicField(name string) interface{} {
 }
 
 type jsonModel struct {
-	ID      int64       `json:"id" orm:"pk;column(id)"`
-	Content jsonContent `json:"content" orm:"column(content);json"`
+	ID         int64        `json:"id" orm:"pk;column(id)"`
+	Content    jsonContent  `json:"content" orm:"column(content);json"`
+	ContentPtr *jsonContent `json:"content_ptr" orm:"column(content_ptr);json"`
 }
 
 func (*jsonModel) TableName() string {
@@ -51,6 +52,10 @@ func TestJSON(t *testing.T) {
 			Type: "a",
 			Data: &aData{Value: 10},
 		},
+		ContentPtr: &jsonContent{
+			Type: "a",
+			Data: &aData{Value: 10},
+		},
 	}
 
 	aId, err := db.Insert(aObj)
@@ -59,6 +64,10 @@ func TestJSON(t *testing.T) {
 
 	bObj := &jsonModel{
 		Content: jsonContent{
+			Type: "b",
+			Data: &bData{Values: []int{1, 3, 5}},
+		},
+		ContentPtr: &jsonContent{
 			Type: "b",
 			Data: &bData{Values: []int{1, 3, 5}},
 		},
@@ -77,6 +86,8 @@ func TestJSON(t *testing.T) {
 	require.Equal(t, aObj.Content.Type, aObjRead.Content.Type)
 	adata := aObjRead.Content.Data.(*aData)
 	require.Equal(t, 10, adata.Value, "check aObjRead.Content.Value")
+	adataFromPtr := aObjRead.ContentPtr.Data.(*aData)
+	require.Equal(t, 10, adataFromPtr.Value, "check aObjRead.ContentPtr.Value")
 
 	err = db.Read(bObjRead)
 	require.NoError(t, err, "read bObj")
@@ -84,6 +95,8 @@ func TestJSON(t *testing.T) {
 	require.Equal(t, bObj.Content.Type, bObjRead.Content.Type)
 	bdata := bObjRead.Content.Data.(*bData)
 	require.Equal(t, []int{1, 3, 5}, bdata.Values, "check aObjRead.Content.Values")
+	bdataFromPtr := bObjRead.ContentPtr.Data.(*bData)
+	require.Equal(t, []int{1, 3, 5}, bdataFromPtr.Values, "check aObjRead.ContentPtr.Values")
 }
 
 type mapJsonModel struct {

@@ -302,7 +302,6 @@ func TestTime(t *testing.T) {
 	err = db.Read(obj2, "ID")
 	require.NoError(t, err, "read time obj")
 	require.Equal(t, obj.ObjTime.Time.Local().Format(time.RFC3339), obj2.ObjTime.Time.Local().Format(time.RFC3339), "time read not equal with time inserted")
-
 }
 
 func TestMain(m *testing.M) {
