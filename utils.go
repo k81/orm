@@ -239,22 +239,37 @@ func indirectType(v reflect.Type) reflect.Type {
 
 // IsEmptyValue check the value is zero
 func IsEmptyValue(v reflect.Value) bool {
-	switch v.Kind() {
-	case reflect.String, reflect.Array:
-		return v.Len() == 0
-	case reflect.Map, reflect.Slice:
-		return v.Len() == 0 || v.IsNil()
-	case reflect.Bool:
-		return !v.Bool()
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return v.Int() == 0
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
-		return v.Uint() == 0
-	case reflect.Float32, reflect.Float64:
-		return v.Float() == 0
-	case reflect.Interface, reflect.Ptr:
-		return v.IsNil()
+	for {
+		switch v.Kind() {
+		case reflect.Interface, reflect.Ptr:
+			if v.IsNil() {
+				return true
+			}
+			v = v.Elem()
+		case reflect.Slice, reflect.Array:
+			for i := 0; i < v.Len(); i++ {
+				if !IsEmptyValue(v.Index(i)) {
+					return false
+				}
+			}
+			return true
+		case reflect.Map:
+			iter := v.MapRange()
+			for iter.Next() {
+				if !IsEmptyValue(iter.Value()) {
+					return false
+				}
+			}
+			return true
+		case reflect.Struct:
+			for i := 0; i < v.NumField(); i++ {
+				if !IsEmptyValue(v.Field(i)) {
+					return false
+				}
+			}
+			return true
+		default:
+			return reflect.DeepEqual(v.Interface(), reflect.Zero(v.Type()).Interface())
+		}
 	}
-
-	return reflect.DeepEqual(v.Interface(), reflect.Zero(v.Type()).Interface())
 }
