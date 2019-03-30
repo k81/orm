@@ -5,9 +5,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
-	"io"
 	"reflect"
-	"strings"
 )
 
 // JSONValue is the json wrapper
@@ -37,18 +35,14 @@ func (jv *JSONValue) Value() (driver.Value, error) {
 
 // Scan implements sql.Scanner interface
 func (jv *JSONValue) Scan(value interface{}) error {
-	var reader io.Reader
-
 	switch rawVal := value.(type) {
 	case string:
-		reader = strings.NewReader(rawVal)
+		return parseJSON([]byte(rawVal), jv.addr)
 	case []byte:
-		reader = bytes.NewReader(rawVal)
+		return parseJSON(rawVal, jv.addr)
 	default:
 		return errors.New("invalid type for json raw data")
 	}
-
-	return parseJSON(reader, jv.addr)
 }
 
 // getInnerPtrValue
@@ -74,12 +68,17 @@ func getInnerPtrValue(ptr interface{}) (val, ind reflect.Value) {
 	}
 }
 
-func parseJSON(r io.Reader, ptr interface{}) error {
+func parseJSON(data []byte, ptr interface{}) error {
+	data = bytes.TrimSpace(data)
+	if len(data) == 0 {
+		return nil
+	}
+
 	val, ind := getInnerPtrValue(ptr)
 	ptr = val.Interface()
 	_, ok := ptr.(DynamicFielder)
 	if !ok {
-		return json.NewDecoder(r).Decode(ptr)
+		return json.Unmarshal(data, ptr)
 	}
 
 	dynFieldMap := make(map[string]*json.RawMessage)
@@ -100,7 +99,7 @@ func parseJSON(r io.Reader, ptr interface{}) error {
 		}
 	}
 
-	if err := json.NewDecoder(r).Decode(ptr); err != nil {
+	if err := json.Unmarshal(data, ptr); err != nil {
 		return err
 	}
 
@@ -108,7 +107,7 @@ func parseJSON(r io.Reader, ptr interface{}) error {
 		field := ind.FieldByName(name)
 		dynVal := ptr.(DynamicFielder).NewDynamicField(name)
 		if dynVal != nil && len(*rawMsg) > 0 {
-			if err := parseJSON(bytes.NewReader([]byte(*rawMsg)), dynVal); err != nil {
+			if err := parseJSON([]byte(*rawMsg), dynVal); err != nil {
 				return err
 			}
 			field.Set(reflect.ValueOf(dynVal))

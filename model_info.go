@@ -1,7 +1,6 @@
 package orm
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -234,7 +233,7 @@ func (mi *modelInfo) setDynamicFields(ind reflect.Value, dynColumns []string) er
 
 		ptr := dynFielder.NewDynamicField(fi.name)
 
-		if err := parseJSON(bytes.NewReader(*rawMsg), ptr); err != nil {
+		if err := parseJSON([]byte(*rawMsg), ptr); err != nil {
 			return err
 		}
 		field.Set(reflect.ValueOf(ptr))

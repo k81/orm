@@ -108,6 +108,13 @@ func (*mapJsonModel) TableName() string {
 	return "json_test2"
 }
 
+func TestParseJSON(t *testing.T) {
+	data := []byte{}
+	v := &aData{}
+	err := parseJSON(data, v)
+	require.NoError(t, err)
+}
+
 func TestJSONMap(t *testing.T) {
 	db := NewOrm(context.TODO())
 	db.QueryTable(new(mapJsonModel)).Delete()
