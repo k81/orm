@@ -99,7 +99,7 @@ func (o *orm) getMiInd(md interface{}, needPtr bool) (mi *modelInfo, ind reflect
 
 func (o *orm) ReadFromMaster(md interface{}, cols ...string) error {
 	mi, ind := o.getMiInd(md, true)
-	if !o.isTx {
+	if !o.isTx && o.db == nil {
 		o.Using(mi.db)
 	}
 	return mi.Read(o.ctx, o.db, ind, cols, false, true)
@@ -108,7 +108,7 @@ func (o *orm) ReadFromMaster(md interface{}, cols ...string) error {
 // read data to model
 func (o *orm) Read(md interface{}, cols ...string) error {
 	mi, ind := o.getMiInd(md, true)
-	if !o.isTx {
+	if !o.isTx && o.db == nil {
 		o.Using(mi.db)
 	}
 	return mi.Read(o.ctx, o.db, ind, cols, false, false)
@@ -117,7 +117,7 @@ func (o *orm) Read(md interface{}, cols ...string) error {
 // read data to model, like Read(), but use "SELECT FOR UPDATE" form
 func (o *orm) ReadForUpdate(md interface{}, cols ...string) error {
 	mi, ind := o.getMiInd(md, true)
-	if !o.isTx {
+	if !o.isTx && o.db == nil {
 		o.Using(mi.db)
 	}
 	return mi.Read(o.ctx, o.db, ind, cols, true, false)
@@ -126,7 +126,7 @@ func (o *orm) ReadForUpdate(md interface{}, cols ...string) error {
 // insert model data to database
 func (o *orm) Insert(md interface{}) (int64, error) {
 	mi, ind := o.getMiInd(md, true)
-	if !o.isTx {
+	if !o.isTx && o.db == nil {
 		o.Using(mi.db)
 	}
 	id, err := mi.Insert(o.ctx, o.db, ind)
@@ -160,7 +160,7 @@ func (o *orm) InsertMulti(bulk int, mds interface{}) (int64, error) {
 	}
 
 	mi, _ := o.getMiInd(sind.Index(0).Interface(), false)
-	if !o.isTx {
+	if !o.isTx && o.db == nil {
 		o.Using(mi.db)
 	}
 	return mi.InsertMulti(o.ctx, o.db, sind, bulk, tableSuffix)
@@ -170,7 +170,7 @@ func (o *orm) InsertMulti(bulk int, mds interface{}) (int64, error) {
 // cols set the columns those want to update.
 func (o *orm) Update(md interface{}, cols ...string) (int64, error) {
 	mi, ind := o.getMiInd(md, true)
-	if !o.isTx {
+	if !o.isTx && o.db == nil {
 		o.Using(mi.db)
 	}
 	return mi.Update(o.ctx, o.db, ind, cols)
@@ -180,7 +180,7 @@ func (o *orm) Update(md interface{}, cols ...string) (int64, error) {
 // cols shows the delete conditions values read from. default is pk
 func (o *orm) Delete(md interface{}, cols ...string) (int64, error) {
 	mi, ind := o.getMiInd(md, true)
-	if !o.isTx {
+	if !o.isTx && o.db == nil {
 		o.Using(mi.db)
 	}
 	return mi.Delete(o.ctx, o.db, ind, cols)
@@ -217,8 +217,7 @@ func (o *orm) Using(dbName string) {
 
 	db, ok := dbCache.get(dbName)
 	if !ok {
-		db = dbCache.getDefault()
-		dbName = "default"
+		panic(fmt.Errorf("db not registered: %v", dbName))
 	}
 
 	o.dbName = dbName
@@ -308,5 +307,6 @@ func NewOrm(ctx context.Context) Ormer {
 
 	o := new(orm)
 	o.ctx = ctx
+	o.Using("default")
 	return o
 }

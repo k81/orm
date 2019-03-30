@@ -257,6 +257,46 @@ func TestJsonOmit(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestMultiDBSameTable(t *testing.T) {
+	db := NewOrm(context.TODO())
+	o1 := &anyObj{
+		ID:      1,
+		ObjOmit: obj{"", 1},
+		Obj:     obj{"", 1},
+	}
+
+	db.Using("default")
+	db.QueryTable(new(anyObj)).Delete()
+	_, err := db.Insert(o1)
+	require.NoError(t, err)
+
+	o2 := &anyObj{
+		ID:      2,
+		ObjOmit: obj{"", 2},
+		Obj:     obj{"", 2},
+	}
+	db.Using("orm_test2")
+	db.QueryTable(new(anyObj)).Delete()
+	_, err = db.Insert(o2)
+	require.NoError(t, err)
+
+	db.Using("default")
+	objRead1DB1 := &anyObj{ID: 1}
+	err = db.Read(objRead1DB1, "ID")
+	require.NoError(t, err)
+	objRead2DB1 := &anyObj{ID: 2}
+	err = db.Read(objRead2DB1, "ID")
+	require.Equal(t, err, ErrNoRows)
+
+	db.Using("orm_test2")
+	objRead2DB2 := &anyObj{ID: 2}
+	err = db.Read(objRead2DB2, "ID")
+	require.NoError(t, err)
+	objRead1DB2 := &anyObj{ID: 1}
+	err = db.Read(objRead1DB2, "ID")
+	require.Equal(t, err, ErrNoRows)
+}
+
 func TestRawQueryRows(t *testing.T) {
 	db := NewOrm(context.TODO())
 	db.QueryTable(new(anyObj)).Delete()
@@ -306,6 +346,7 @@ func TestTime(t *testing.T) {
 
 func TestMain(m *testing.M) {
 	RegisterDB("default", "mysql", "orm_test:orm_test@tcp(127.0.0.1:3306)/orm_test?timeout=5s&readTimeout=15s&writeTimeout=15s", 20, 100)
+	RegisterDB("orm_test2", "mysql", "orm_test:orm_test@tcp(127.0.0.1:3306)/orm_test2?timeout=5s&readTimeout=15s&writeTimeout=15s", 20, 100)
 	RegisterModel("default", new(shardedPerson))
 	RegisterModel("default", new(jsonModel))
 	RegisterModel("default", new(mapJsonModel))

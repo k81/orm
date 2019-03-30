@@ -246,7 +246,7 @@ func (qs *querySetter) One(container interface{}, cols ...string) error {
 
 // create new QuerySetter.
 func newQuerySetter(orm *orm, mi *modelInfo) QuerySetter {
-	if !orm.isTx {
+	if !orm.isTx && orm.db == nil {
 		orm.Using(mi.db)
 	}
 
