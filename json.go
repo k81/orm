@@ -107,7 +107,7 @@ func parseJSON(r io.Reader, ptr interface{}) error {
 	for name, rawMsg := range dynFieldMap {
 		field := ind.FieldByName(name)
 		dynVal := ptr.(DynamicFielder).NewDynamicField(name)
-		if dynVal != nil {
+		if dynVal != nil && len(*rawMsg) > 0 {
 			if err := parseJSON(bytes.NewReader([]byte(*rawMsg)), dynVal); err != nil {
 				return err
 			}
