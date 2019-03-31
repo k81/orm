@@ -170,7 +170,7 @@ func (mi *modelInfo) getValues(ind reflect.Value, anyNames []string) []interface
 
 		value := ind.FieldByIndex(fi.fieldIndex).Interface()
 		if fi.json {
-			value = getJSONValue(value, fi.jsonOmitEmpty)
+			value = newJSONValue(value, fi.jsonOmitEmpty)
 		}
 
 		values[i] = value
@@ -197,7 +197,7 @@ func (mi *modelInfo) getValueContainers(ind reflect.Value, columns []string) ([]
 				dynColumns = append(dynColumns, fi.column)
 				field.Set(reflect.ValueOf(container))
 			}
-			container = getJSONValue(container, fi.jsonOmitEmpty)
+			container = newJSONValue(container, fi.jsonOmitEmpty)
 		}
 		containers[i] = container
 	}

@@ -14,6 +14,13 @@ type JSONValue struct {
 	omitEmpty bool
 }
 
+func newJSONValue(v interface{}, omitEmpty bool) interface{} {
+	return &JSONValue{
+		addr:      v,
+		omitEmpty: omitEmpty,
+	}
+}
+
 // Value implements sql.Valuer interface
 func (jv *JSONValue) Value() (driver.Value, error) {
 	if jv.omitEmpty {
@@ -45,6 +52,11 @@ func (jv *JSONValue) Scan(value interface{}) error {
 	}
 }
 
+type dynField struct {
+	Name  string
+	Value *reflect.Value
+}
+
 // getInnerPtrValue
 // val: *struct{}
 // ind: struct{}
@@ -54,9 +66,7 @@ func getInnerPtrValue(ptr interface{}) (val, ind reflect.Value) {
 
 	for {
 		switch ind.Kind() {
-		case reflect.Interface:
-			fallthrough
-		case reflect.Ptr:
+		case reflect.Interface, reflect.Ptr:
 			if ind.IsNil() {
 				ind.Set(reflect.New(ind.Type().Elem()))
 			}
@@ -68,9 +78,45 @@ func getInnerPtrValue(ptr interface{}) (val, ind reflect.Value) {
 	}
 }
 
-type dynField struct {
-	Name  string
-	Value *reflect.Value
+func gatherDynFields(val reflect.Value, pFields *[]*dynField) {
+	switch val.Kind() {
+	case reflect.Interface, reflect.Ptr:
+		if val.IsNil() {
+			return
+		}
+		gatherDynFields(val.Elem(), pFields)
+	case reflect.Slice, reflect.Array:
+		for i := 0; i < val.Len(); i++ {
+			gatherDynFields(val.Index(i), pFields)
+		}
+	case reflect.Map:
+		iter := val.MapRange()
+		for iter.Next() {
+			gatherDynFields(iter.Value(), pFields)
+		}
+	case reflect.Struct:
+		typ := val.Type()
+		for i := 0; i < val.NumField(); i++ {
+			sf := typ.Field(i)
+			field := val.Field(i)
+
+			if !field.CanSet() {
+				continue
+			}
+
+			dynamic := sf.Tag.Get("dynamic")
+			if dynamic == "true" {
+				rawMsg := new(json.RawMessage)
+				field.Set(reflect.ValueOf(rawMsg))
+				*pFields = append(*pFields, &dynField{
+					Name:  sf.Name,
+					Value: &field,
+				})
+			} else {
+				gatherDynFields(field, pFields)
+			}
+		}
+	}
 }
 
 // ParseJSON parse json with dynamic field parse support
@@ -83,31 +129,9 @@ func ParseJSON(data []byte, ptr interface{}) error {
 
 	val, ind := getInnerPtrValue(ptr)
 	ptr = val.Interface()
-
-	if ind.Kind() != reflect.Struct {
-		return json.Unmarshal(data, ptr)
-	}
-
-	typ := ind.Type()
 	dynFields := []*dynField{}
-	for i := 0; i < ind.NumField(); i++ {
-		sf := typ.Field(i)
-		field := ind.Field(i)
 
-		if !field.CanSet() {
-			continue
-		}
-
-		dynamic := sf.Tag.Get("dynamic")
-		if dynamic == "true" {
-			rawMsg := new(json.RawMessage)
-			field.Set(reflect.ValueOf(rawMsg))
-			dynFields = append(dynFields, &dynField{
-				Name:  sf.Name,
-				Value: &field,
-			})
-		}
-	}
+	gatherDynFields(ind, &dynFields)
 
 	if err := json.Unmarshal(data, ptr); err != nil {
 		return err
@@ -127,11 +151,4 @@ func ParseJSON(data []byte, ptr interface{}) error {
 	}
 
 	return nil
-}
-
-func getJSONValue(v interface{}, omitEmpty bool) interface{} {
-	return &JSONValue{
-		addr:      v,
-		omitEmpty: omitEmpty,
-	}
 }
