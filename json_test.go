@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/k81/dynamicjson"
 	"github.com/stretchr/testify/require"
 )
 
@@ -111,7 +112,7 @@ func (*mapJsonModel) TableName() string {
 func TestParseJSON(t *testing.T) {
 	data := []byte{}
 	v := &aData{}
-	err := ParseJSON(data, v)
+	err := dynamicjson.Parse(data, v)
 	require.NoError(t, err)
 }
 
