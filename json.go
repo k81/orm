@@ -68,7 +68,13 @@ func getInnerPtrValue(ptr interface{}) (val, ind reflect.Value) {
 	}
 }
 
-func parseJSON(data []byte, ptr interface{}) error {
+type dynField struct {
+	Name  string
+	Value *reflect.Value
+}
+
+// ParseJSON parse json with dynamic field parse support
+func ParseJSON(data []byte, ptr interface{}) error {
 	data = bytes.TrimSpace(data)
 	if len(data) == 0 {
 		// ignore empty field
@@ -77,13 +83,13 @@ func parseJSON(data []byte, ptr interface{}) error {
 
 	val, ind := getInnerPtrValue(ptr)
 	ptr = val.Interface()
-	_, ok := ptr.(DynamicFielder)
-	if !ok {
+
+	if ind.Kind() != reflect.Struct {
 		return json.Unmarshal(data, ptr)
 	}
 
-	dynFieldMap := make(map[string]*json.RawMessage)
 	typ := ind.Type()
+	dynFields := []*dynField{}
 	for i := 0; i < ind.NumField(); i++ {
 		sf := typ.Field(i)
 		field := ind.Field(i)
@@ -96,7 +102,10 @@ func parseJSON(data []byte, ptr interface{}) error {
 		if dynamic == "true" {
 			rawMsg := new(json.RawMessage)
 			field.Set(reflect.ValueOf(rawMsg))
-			dynFieldMap[sf.Name] = rawMsg
+			dynFields = append(dynFields, &dynField{
+				Name:  sf.Name,
+				Value: &field,
+			})
 		}
 	}
 
@@ -104,16 +113,16 @@ func parseJSON(data []byte, ptr interface{}) error {
 		return err
 	}
 
-	for name, rawMsg := range dynFieldMap {
-		field := ind.FieldByName(name)
-		dynVal := ptr.(DynamicFielder).NewDynamicField(name)
+	for _, dynField := range dynFields {
+		rawMsg := dynField.Value.Interface().(*json.RawMessage)
+		dynVal := ptr.(DynamicFielder).NewDynamicField(dynField.Name)
 		if dynVal != nil && len(*rawMsg) > 0 {
-			if err := parseJSON([]byte(*rawMsg), dynVal); err != nil {
+			if err := ParseJSON([]byte(*rawMsg), dynVal); err != nil {
 				return err
 			}
-			field.Set(reflect.ValueOf(dynVal))
+			dynField.Value.Set(reflect.ValueOf(dynVal))
 		} else {
-			field.Set(reflect.Zero(field.Type())) // for json:",omitempty"
+			dynField.Value.Set(reflect.Zero(dynField.Value.Type())) // for json:",omitempty"
 		}
 	}
 
