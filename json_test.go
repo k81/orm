@@ -111,7 +111,7 @@ func (*mapJsonModel) TableName() string {
 func TestParseJSON(t *testing.T) {
 	data := []byte{}
 	v := &aData{}
-	err := parseJSON(data, v)
+	err := ParseJSON(data, v)
 	require.NoError(t, err)
 }
 

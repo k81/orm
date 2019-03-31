@@ -37,9 +37,9 @@ func (jv *JSONValue) Value() (driver.Value, error) {
 func (jv *JSONValue) Scan(value interface{}) error {
 	switch rawVal := value.(type) {
 	case string:
-		return parseJSON([]byte(rawVal), jv.addr)
+		return ParseJSON([]byte(rawVal), jv.addr)
 	case []byte:
-		return parseJSON(rawVal, jv.addr)
+		return ParseJSON(rawVal, jv.addr)
 	default:
 		return errors.New("invalid type for json raw data")
 	}

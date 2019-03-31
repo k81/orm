@@ -233,7 +233,7 @@ func (mi *modelInfo) setDynamicFields(ind reflect.Value, dynColumns []string) er
 
 		ptr := dynFielder.NewDynamicField(fi.name)
 
-		if err := parseJSON([]byte(*rawMsg), ptr); err != nil {
+		if err := ParseJSON([]byte(*rawMsg), ptr); err != nil {
 			return err
 		}
 		field.Set(reflect.ValueOf(ptr))
