@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/k81/dynamic"
 	"github.com/stretchr/testify/require"
 )
 
@@ -16,9 +17,9 @@ type bDynContent struct {
 }
 
 type dynamicModel struct {
-	ID      int64       `orm:"pk;column(id)"`
-	Type    string      `orm:"column(type)"`
-	Content interface{} `orm:"column(content);json" dynamic:"true"`
+	ID      int64         `orm:"pk;column(id)"`
+	Type    string        `orm:"column(type)"`
+	Content *dynamic.Type `orm:"column(content);json"`
 }
 
 func (m *dynamicModel) TableName() string {
@@ -41,9 +42,9 @@ func TestDynamic(t *testing.T) {
 
 	aObj := &dynamicModel{
 		Type: "A",
-		Content: &aDynContent{
+		Content: dynamic.New(&aDynContent{
 			Value: 10,
-		},
+		}),
 	}
 	aId, err := db.Insert(aObj)
 	require.NoError(t, err, "insert dyn aObj")
@@ -51,9 +52,9 @@ func TestDynamic(t *testing.T) {
 
 	bObj := &dynamicModel{
 		Type: "B",
-		Content: &bDynContent{
+		Content: dynamic.New(&bDynContent{
 			Values: []int{1, 3, 5},
-		},
+		}),
 	}
 	bId, err := db.Insert(bObj)
 	require.NoError(t, err, "insert dyn bObj")
@@ -64,12 +65,14 @@ func TestDynamic(t *testing.T) {
 	err = db.Read(aObjRead)
 	require.NoError(t, err, "read dyn aObj")
 	require.Equal(t, "A", aObjRead.Type, "check read dyn aObj.Type")
-	require.IsType(t, aObj.Content, aObjRead.Content, "check read dyn aObj.Content")
-	require.Equal(t, 10, aObjRead.Content.(*aDynContent).Value, "check aObj.Content.Value")
+	require.NotNil(t, aObjRead.Content)
+	require.IsType(t, aObj.Content.Value, aObjRead.Content.Value, "check read dyn aObj.Content")
+	require.Equal(t, 10, aObjRead.Content.Value.(*aDynContent).Value, "check aObj.Content.Value")
 
 	err = db.Read(bObjRead)
 	require.NoError(t, err, "read dyn bObj")
 	require.Equal(t, "B", bObjRead.Type, "check read dyn bObj.Type")
-	require.IsType(t, bObj.Content, bObjRead.Content, "check read dyn bObj.Content")
-	require.Equal(t, []int{1, 3, 5}, bObjRead.Content.(*bDynContent).Values, "check bObj.Content.Value")
+	require.NotNil(t, bObjRead.Content)
+	require.IsType(t, bObj.Content.Value, bObjRead.Content.Value, "check read dyn bObj.Content")
+	require.Equal(t, []int{1, 3, 5}, bObjRead.Content.Value.(*bDynContent).Values, "check bObj.Content.Value")
 }

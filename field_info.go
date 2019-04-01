@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+
+	"github.com/k81/dynamic"
 )
 
 var errSkipField = errors.New("skip field")
@@ -61,12 +63,8 @@ func newFieldInfo(mi *modelInfo, field reflect.Value, sf reflect.StructField, mN
 	}
 
 	if fi.json {
-		fi.dynamic = sf.Tag.Get("dynamic") == "true"
+		fi.dynamic = dynamic.IsDynamic(field.Type())
 		if fi.dynamic {
-			if field.Kind() != reflect.Interface {
-				panic(fmt.Errorf("json dynamic field must be interface{}: %v", fi.fullName))
-			}
-
 			_, ok := mi.addrField.Interface().(DynamicFielder)
 			if !ok {
 				panic(fmt.Errorf("model must implement DynamicFielder interface: %v", mi.fullName))

@@ -6,7 +6,7 @@ import (
 	"errors"
 	"reflect"
 
-	"github.com/k81/dynamicjson"
+	"github.com/k81/dynamic"
 )
 
 // JSONValue is the json wrapper
@@ -48,12 +48,12 @@ func (jv *JSONValue) Scan(value interface{}) error {
 		if len(rawVal) == 0 {
 			return nil
 		}
-		return dynamicjson.Parse([]byte(rawVal), jv.addr)
+		return dynamic.ParseJSON([]byte(rawVal), jv.addr)
 	case []byte:
 		if len(rawVal) == 0 {
 			return nil
 		}
-		return dynamicjson.Parse(rawVal, jv.addr)
+		return dynamic.ParseJSON(rawVal, jv.addr)
 	default:
 		return errors.New("invalid type for json raw data")
 	}

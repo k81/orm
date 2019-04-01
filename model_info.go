@@ -1,12 +1,11 @@
 package orm
 
 import (
-	"encoding/json"
 	"fmt"
 	"reflect"
 	"strings"
 
-	"github.com/k81/dynamicjson"
+	"github.com/k81/dynamic"
 )
 
 // single model info
@@ -195,7 +194,7 @@ func (mi *modelInfo) getValueContainers(ind reflect.Value, columns []string) ([]
 
 		if fi.json {
 			if fi.dynamic {
-				container := new(json.RawMessage)
+				container = &dynamic.Type{}
 				dynColumns = append(dynColumns, fi.column)
 				field.Set(reflect.ValueOf(container))
 			}
@@ -228,24 +227,24 @@ func (mi *modelInfo) setDynamicFields(ind reflect.Value, dynColumns []string) er
 		}
 
 		field := ind.FieldByIndex(fi.fieldIndex)
-		rawMsg, ok := field.Interface().(*json.RawMessage)
+		dynValue, ok := field.Interface().(*dynamic.Type)
 		if !ok {
 			panic(fmt.Errorf("dynamic field is not scanned as *json.RawMessage: %v", fi.fullName))
 		}
-		if len(*rawMsg) == 0 {
-			field.Set(reflect.Zero(field.Type()))
-			continue
-		}
 
-		ptr := dynFielder.NewDynamicField(fi.name)
-		if ptr == nil {
-			field.Set(reflect.Zero(field.Type()))
-			continue
+		rawMsg := dynValue.GetRawMessage()
+		if len(rawMsg) > 0 {
+			ptr := dynFielder.NewDynamicField(fi.name)
+			if ptr != nil {
+				if err := dynamic.ParseJSON([]byte(rawMsg), ptr); err != nil {
+					return err
+				}
+				dynValue.Value = ptr
+				continue
+			}
 		}
-		if err := dynamicjson.Parse([]byte(*rawMsg), ptr); err != nil {
-			return err
-		}
-		field.Set(reflect.ValueOf(ptr))
+		// if json is not parsed, then set to nil
+		field.Set(reflect.Zero(field.Type()))
 	}
 	return nil
 }

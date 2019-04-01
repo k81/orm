@@ -4,64 +4,74 @@ import (
 	"context"
 	"testing"
 
-	"github.com/k81/dynamicjson"
+	"github.com/k81/dynamic"
 	"github.com/stretchr/testify/require"
 )
 
-type aContent struct {
+type aData struct {
 	Value int `json:"value"`
 }
 
-type bContent struct {
+type bData struct {
 	Values []int `json:"items"`
 }
 
-type jsonValue struct {
-	dynamicjson.DynamicJSON
+type jsonContent struct {
+	Type string        `json:"type"`
+	Data *dynamic.Type `json:"data"`
 }
 
-func (jc *jsonValue) NewDynamicContent(typ string) interface{} {
-	switch typ {
+func (c *jsonContent) NewDynamicField(name string) interface{} {
+	switch c.Type {
 	case "a":
-		return &aContent{}
+		return new(aData)
 	case "b":
-		return &bContent{}
+		return new(bData)
 	}
 	return nil
 }
 
 type jsonModel struct {
-	ID         int64      `json:"id" orm:"pk;column(id)"`
-	Content    jsonValue  `json:"content" orm:"column(content);json"`
-	ContentPtr *jsonValue `json:"content_ptr" orm:"column(content_ptr);json"`
+	ID         int64        `json:"id" orm:"pk;column(id)"`
+	Content    jsonContent  `json:"content" orm:"column(content);json"`
+	ContentPtr *jsonContent `json:"content_ptr" orm:"column(content_ptr);json"`
 }
 
 func (*jsonModel) TableName() string {
 	return "json_test"
 }
 
-func TestDynamicJSON(t *testing.T) {
+func TestJSON(t *testing.T) {
+	//aRawContent := `{"type": "a", "content": {"value": 10}}`
+	//bRawContent := `{"type": "b", "content": {"items": [1,3,5]}}`
+
 	db := NewOrm(context.TODO())
 	db.QueryTable(new(jsonModel)).Delete()
 
-	aJsonContent := jsonValue{}
-	aJsonContent.SetType("a")
-	aJsonContent.SetContent(&aContent{Value: 10})
 	aObj := &jsonModel{
-		Content:    aJsonContent,
-		ContentPtr: &aJsonContent,
+		Content: jsonContent{
+			Type: "a",
+			Data: dynamic.New(&aData{Value: 10}),
+		},
+		ContentPtr: &jsonContent{
+			Type: "a",
+			Data: dynamic.New(&aData{Value: 10}),
+		},
 	}
 
 	aId, err := db.Insert(aObj)
 	require.NoError(t, err, "insert aObj")
 	t.Logf("aObj.ID=%v", aId)
 
-	bJsonContent := jsonValue{}
-	bJsonContent.SetType("b")
-	bJsonContent.SetContent(&bContent{Values: []int{1, 3, 5}})
 	bObj := &jsonModel{
-		Content:    bJsonContent,
-		ContentPtr: &bJsonContent,
+		Content: jsonContent{
+			Type: "b",
+			Data: dynamic.New(&bData{Values: []int{1, 3, 5}}),
+		},
+		ContentPtr: &jsonContent{
+			Type: "b",
+			Data: dynamic.New(&bData{Values: []int{1, 3, 5}}),
+		},
 	}
 
 	bId, err := db.Insert(bObj)
@@ -74,19 +84,19 @@ func TestDynamicJSON(t *testing.T) {
 	err = db.Read(aObjRead)
 	require.NoError(t, err, "read aObj")
 	require.IsType(t, aObj.Content, aObjRead.Content)
-	require.Equal(t, aObj.Content.GetType(), aObjRead.Content.GetType())
-	adata := aObjRead.Content.GetContent().(*aContent)
+	require.Equal(t, aObj.Content.Type, aObjRead.Content.Type)
+	adata := aObjRead.Content.Data.Value.(*aData)
 	require.Equal(t, 10, adata.Value, "check aObjRead.Content.Value")
-	adataFromPtr := aObjRead.ContentPtr.GetContent().(*aContent)
+	adataFromPtr := aObjRead.ContentPtr.Data.Value.(*aData)
 	require.Equal(t, 10, adataFromPtr.Value, "check aObjRead.ContentPtr.Value")
 
 	err = db.Read(bObjRead)
 	require.NoError(t, err, "read bObj")
 	require.IsType(t, bObj.Content, bObjRead.Content)
-	require.Equal(t, bObj.Content.GetType(), bObjRead.Content.GetType())
-	bdata := bObjRead.Content.GetContent().(*bContent)
+	require.Equal(t, bObj.Content.Type, bObjRead.Content.Type)
+	bdata := bObjRead.Content.Data.Value.(*bData)
 	require.Equal(t, []int{1, 3, 5}, bdata.Values, "check aObjRead.Content.Values")
-	bdataFromPtr := bObjRead.ContentPtr.GetContent().(*bContent)
+	bdataFromPtr := bObjRead.ContentPtr.Data.Value.(*bData)
 	require.Equal(t, []int{1, 3, 5}, bdataFromPtr.Values, "check aObjRead.ContentPtr.Values")
 }
 
