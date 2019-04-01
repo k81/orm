@@ -45,8 +45,14 @@ func (jv *JSONValue) Value() (driver.Value, error) {
 func (jv *JSONValue) Scan(value interface{}) error {
 	switch rawVal := value.(type) {
 	case string:
+		if len(rawVal) == 0 {
+			return nil
+		}
 		return dynamicjson.Parse([]byte(rawVal), jv.addr)
 	case []byte:
+		if len(rawVal) == 0 {
+			return nil
+		}
 		return dynamicjson.Parse(rawVal, jv.addr)
 	default:
 		return errors.New("invalid type for json raw data")

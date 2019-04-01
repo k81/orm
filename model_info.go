@@ -232,9 +232,16 @@ func (mi *modelInfo) setDynamicFields(ind reflect.Value, dynColumns []string) er
 		if !ok {
 			panic(fmt.Errorf("dynamic field is not scanned as *json.RawMessage: %v", fi.fullName))
 		}
+		if len(*rawMsg) == 0 {
+			field.Set(reflect.Zero(field.Type()))
+			continue
+		}
 
 		ptr := dynFielder.NewDynamicField(fi.name)
-
+		if ptr == nil {
+			field.Set(reflect.Zero(field.Type()))
+			continue
+		}
 		if err := dynamicjson.Parse([]byte(*rawMsg), ptr); err != nil {
 			return err
 		}
