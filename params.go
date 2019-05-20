@@ -10,7 +10,7 @@ type ParamsList []interface{}
 
 type colValue struct {
 	value int64
-	opt   operator
+	op    operator
 }
 
 type operator int
@@ -27,8 +27,8 @@ const (
 // 	Params{
 // 		"Nums": ColValue(Col_Add, 10),
 // 	}
-func ColValue(opt operator, value interface{}) interface{} {
-	switch opt {
+func ColValue(op operator, value interface{}) interface{} {
+	switch op {
 	case ColAdd, ColSub, ColMul, ColDiv:
 	default:
 		panic(fmt.Errorf("orm.ColValue wrong operator"))
@@ -39,6 +39,6 @@ func ColValue(opt operator, value interface{}) interface{} {
 	}
 	return &colValue{
 		value: v,
-		opt:   opt,
+		op:    op,
 	}
 }

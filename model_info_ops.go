@@ -543,7 +543,7 @@ func getAssignments(ub *sqlbuilder.UpdateBuilder, columns []string, values []int
 	for i := range columns {
 		switch v := values[i].(type) {
 		case *colValue:
-			switch v.opt {
+			switch v.op {
 			case ColAdd:
 				assignments[i] = ub.Add(columns[i], v.value)
 			case ColSub:
