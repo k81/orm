@@ -174,6 +174,10 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestQueryTable(t *testing.T) {
+	db := NewOrm(context.TODO())
+	_, err := db.QueryTable(new(shardedPerson)).WithSuffix("0").Delete()
+	require.NoError(t, err, "clean person table")
+
 	person1 := &shardedPerson{
 		PersonID: 20,
 		Name:     "zhangsan",
@@ -184,7 +188,6 @@ func TestQueryTable(t *testing.T) {
 		Name:     "lisi",
 		Age:      9,
 	}
-	db := NewOrm(context.TODO())
 	db.Insert(person1)
 	db.Insert(person2)
 
@@ -223,16 +226,20 @@ func TestQueryTable(t *testing.T) {
 	require.Equal(t, person2.Age, personOneAsc.Age, "check personOneAsc.Age")
 
 	// UpateBatch
-	rowsAffected, err := qs.Update(Params{"Age": 8})
-	require.NoError(t, err, "update set age = 8 failed")
+	rowsAffected, err := qs.Update(Params{"Age": 18})
+	require.NoError(t, err, "update set age = 18 failed")
+	require.Equal(t, int64(2), rowsAffected, "rowsAffected != 2")
+	// UpdateBatch with column op
+	rowsAffected, err = qs.Filter("Age", 18).Update(Params{"Age": ColValue(ColSub, 1)})
+	require.NoError(t, err, "update set age = age -1 failed")
 	require.Equal(t, int64(2), rowsAffected, "rowsAffected != 2")
 
 	// DeleteBatch
 	var personsUpdated []shardedPerson
 	err = db.QueryTable(new(shardedPerson)).WithSuffix("0").All(&personsUpdated)
 	require.NoError(t, err, "query all after update")
-	require.Equal(t, 8, personsUpdated[0].Age, "check personsUpdated[0].Age")
-	require.Equal(t, 8, personsUpdated[1].Age, "check personsUpdated[1].Age")
+	require.Equal(t, 17, personsUpdated[0].Age, "check personsUpdated[0].Age")
+	require.Equal(t, 17, personsUpdated[1].Age, "check personsUpdated[1].Age")
 
 	rowsDeleted, err := db.QueryTable(new(shardedPerson)).WithSuffix("0").Filter("PersonID__in", 20, 40).Delete()
 	require.NoError(t, err, "detele for person_id in (20,40)")

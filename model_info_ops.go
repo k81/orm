@@ -541,7 +541,21 @@ func getEqualWhereExprs(cond *sqlbuilder.Cond, columns []string, values []interf
 func getAssignments(ub *sqlbuilder.UpdateBuilder, columns []string, values []interface{}) []string {
 	assignments := make([]string, len(columns))
 	for i := range columns {
-		assignments[i] = ub.Assign(columns[i], values[i])
+		switch v := values[i].(type) {
+		case *colValue:
+			switch v.op {
+			case ColAdd:
+				assignments[i] = ub.Add(columns[i], v.value)
+			case ColSub:
+				assignments[i] = ub.Sub(columns[i], v.value)
+			case ColMul:
+				assignments[i] = ub.Mul(columns[i], v.value)
+			case ColDiv:
+				assignments[i] = ub.Div(columns[i], v.value)
+			}
+		default:
+			assignments[i] = ub.Assign(columns[i], v)
+		}
 	}
 	return assignments
 }
