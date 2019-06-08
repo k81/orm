@@ -5,8 +5,8 @@ import (
 	"os"
 	"strconv"
 	"testing"
+	"time"
 
-	"github.com/go-sql-driver/mysql"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/require"
 )
@@ -323,36 +323,30 @@ func TestRawQueryRows(t *testing.T) {
 }
 
 type timeObj struct {
-	ID      int            `orm:"column(id);pk;auto"`
-	ObjTime mysql.NullTime `orm:"column(obj_time)"`
+	ID      int       `orm:"column(id);pk;auto"`
+	ObjTime time.Time `orm:"column(obj_time)"`
 }
 
 func (*timeObj) TableName() string {
 	return "time_obj"
 }
 
-//func TestTime(t *testing.T) {
-//db := NewOrm(context.TODO())
-//now, _ := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", "2019-04-01 15:27:17.566088895 +0800 CST")
-//obj := &timeObj{
-//ObjTime: mysql.NullTime{
-//Time:  now,
-//Valid: true,
-//},
-//}
-//_, err := db.Insert(obj)
-//require.NoError(t, err, "insert time obj")
-//obj2 := &timeObj{
-//ID: obj.ID,
-//}
-//err = db.Read(obj2, "ID")
-//require.NoError(t, err, "read time obj")
-//require.True(t, obj2.ObjTime.Valid)
-//require.Equal(t, obj.ObjTime.Time.Local().Format(time.RFC3339), obj2.ObjTime.Time.Local().Format(time.RFC3339), "time read not equal with time inserted")
-//}
+func TestTime(t *testing.T) {
+	db := NewOrm(context.TODO())
+	obj := &timeObj{
+		ObjTime: time.Now(),
+	}
+	_, err := db.Insert(obj)
+	require.NoError(t, err, "insert time obj")
+	obj2 := &timeObj{
+		ID: obj.ID,
+	}
+	err = db.Read(obj2, "ID")
+	require.NoError(t, err, "read time obj")
+}
 
 func TestMain(m *testing.M) {
-	RegisterDB("default", "mysql", "orm_test:orm_test@tcp(127.0.0.1:3306)/orm_test?timeout=5s&readTimeout=15s&writeTimeout=15s", 20, 100)
+	RegisterDB("default", "mysql", "orm_test:orm_test@tcp(127.0.0.1:3306)/orm_test?timeout=5s&readTimeout=15s&writeTimeout=15s&parseTime=true", 20, 100)
 	RegisterDB("orm_test2", "mysql", "orm_test:orm_test@tcp(127.0.0.1:3306)/orm_test2?timeout=5s&readTimeout=15s&writeTimeout=15s", 20, 100)
 	RegisterModel("default", new(shardedPerson))
 	RegisterModel("default", new(jsonModel))
