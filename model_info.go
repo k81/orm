@@ -8,6 +8,8 @@ import (
 	"github.com/k81/dynamic"
 )
 
+var nullContainer string
+
 // single model info
 type modelInfo struct {
 	pkg       string
@@ -180,13 +182,18 @@ func (mi *modelInfo) getValues(ind reflect.Value, anyNames []string) []interface
 }
 
 // getValueContainers return a containers slice used for row.Scan(containers...)
-func (mi *modelInfo) getValueContainers(ind reflect.Value, columns []string) ([]string, []interface{}) {
+func (mi *modelInfo) getValueContainers(ind reflect.Value, columns []string, ignoreUnknown bool) ([]string, []interface{}) {
 	dynColumns := []string{}
 	containers := make([]interface{}, len(columns))
 	for i, column := range columns {
 		fi, ok := mi.fields.GetByAny(column)
 		if !ok {
-			panic(fmt.Errorf("wrong db field/column name `%s` for model `%s`", column, mi.fullName))
+			if ignoreUnknown {
+				containers[i] = &nullContainer
+				continue
+			} else {
+				panic(fmt.Errorf("wrong db field/column name `%s` for model `%s`", column, mi.fullName))
+			}
 		}
 
 		field := ind.FieldByIndex(fi.fieldIndex)

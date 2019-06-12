@@ -99,7 +99,7 @@ func (mi *modelInfo) Read(ctx context.Context, db dbQueryer, ind reflect.Value, 
 		logger.Debug(ctx, "sqlbuilder:read", "query", query, "args", args)
 	}
 
-	dynColumns, containers := mi.getValueContainers(ind, mi.fields.dbcols)
+	dynColumns, containers := mi.getValueContainers(ind, mi.fields.dbcols, false)
 	err := db.QueryRowContext(ctx, query, args...).Scan(containers...)
 	switch {
 	case err == sql.ErrNoRows:
@@ -412,7 +412,7 @@ func (mi *modelInfo) ReadOne(ctx context.Context, db dbQueryer, qs *querySetter,
 		elem := reflect.New(mi.addrField.Elem().Type())
 		elemInd := reflect.Indirect(elem)
 
-		dynColumns, containers := mi.getValueContainers(elemInd, selectNames)
+		dynColumns, containers := mi.getValueContainers(elemInd, selectNames, false)
 		if err = rows.Scan(containers...); err != nil {
 			return err
 		}
@@ -483,7 +483,7 @@ func (mi *modelInfo) ReadBatch(ctx context.Context, db dbQueryer, qs *querySette
 		elem := reflect.New(mi.addrField.Elem().Type())
 		elemInd := reflect.Indirect(elem)
 
-		dynColumns, containers := mi.getValueContainers(elemInd, selectNames)
+		dynColumns, containers := mi.getValueContainers(elemInd, selectNames, false)
 		if err = rows.Scan(containers...); err != nil {
 			return err
 		}
