@@ -5,6 +5,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+
+	"github.com/go-sql-driver/mysql"
 )
 
 // Logger is the orm logger interface
@@ -74,4 +76,15 @@ func (l *defaultLogger) format(msg string, keyvals []interface{}) string {
 	b.Truncate(b.Len() - 2)
 
 	return b.String()
+}
+
+type mysqlErrLogger struct{}
+
+func (*mysqlErrLogger) Print(v ...interface{}) {
+	msg := fmt.Sprint(v...)
+	logger.Error(context.TODO(), "mysql_driver_error", "error", msg)
+}
+
+func init() {
+	mysql.SetLogger(&mysqlErrLogger{})
 }
