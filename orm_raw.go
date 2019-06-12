@@ -178,7 +178,7 @@ func (rq *rawQueryer) QueryRows(container interface{}) error {
 
 		elem := reflect.New(mi.addrField.Elem().Type())
 		elemInd := reflect.Indirect(elem)
-		dynColumns, containers := mi.getValueContainers(elemInd, columns)
+		dynColumns, containers := mi.getValueContainers(elemInd, columns, true)
 
 		if err = rows.Scan(containers...); err != nil {
 			return err
