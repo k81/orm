@@ -7,7 +7,7 @@ import (
 	"go.uber.org/zap"
 )
 
-var logger = zap.NewNop()
+var logger, _ = zap.NewDevelopment()
 
 // SetLogger set the orm logger
 func SetLogger(l *zap.Logger) {
