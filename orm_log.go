@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 func debugLogQueies(
@@ -24,14 +26,14 @@ func debugLogQueies(
 		flag = "FAIL"
 	}
 
-	logger.Debug(ctx, "debug sql",
-		"db", dbName,
-		"flag", flag,
-		"operation", operation,
-		"elapsed_ms", elapsed,
-		"sql", query,
-		"args", args,
-		"error", err,
+	logger.Debug("debug sql",
+		zap.String("db", dbName),
+		zap.String("flag", flag),
+		zap.String("operation", operation),
+		zap.Int64("elapsed_ms", elapsed),
+		zap.String("sql", query),
+		zap.Any("args", args),
+		zap.Error(err),
 	)
 }
 

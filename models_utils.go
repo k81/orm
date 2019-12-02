@@ -1,9 +1,10 @@
 package orm
 
 import (
-	"context"
 	"reflect"
 	"strings"
+
+	"go.uber.org/zap"
 )
 
 const (
@@ -92,20 +93,20 @@ func parseStructTag(data string) (attrs map[string]bool, tags map[string]string)
 
 		tagTyp, ok := supportTag[tag]
 		if !ok {
-			logger.Error(context.TODO(), "unsupport orm tag", "tag", v)
+			logger.Error("unsupport orm tag", zap.String("tag", v))
 			return
 		}
 
 		switch tagTyp {
 		case TagTypeNoArgs:
 			if args != "" {
-				logger.Error(context.TODO(), "tag not support argument", "tag", tag)
+				logger.Error("tag not support argument", zap.String("tag", tag))
 				return
 			}
 			attrs[tag] = true
 		case TagTypeWithArgs:
 			if args == "" {
-				logger.Error(context.TODO(), "tag missing argument", "tag", tag)
+				logger.Error("tag missing argument", zap.String("tag", tag))
 				return
 			}
 			tags[tag] = args

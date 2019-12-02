@@ -8,6 +8,7 @@ import (
 	"reflect"
 
 	"github.com/k81/orm/sqlbuilder"
+	"go.uber.org/zap"
 )
 
 const (
@@ -37,7 +38,7 @@ func (mi *modelInfo) PrepareInsert(ctx context.Context, db dbQueryer, tableSuffi
 	query, _ := builder.Build()
 
 	if DebugSQLBuilder {
-		logger.Debug(ctx, "sqlbuilder:prepare_insert", "query", query)
+		logger.Debug("sqlbuilder:prepare_insert", zap.String("query", query))
 	}
 
 	stmt, err := db.PrepareContext(ctx, query)
@@ -96,7 +97,7 @@ func (mi *modelInfo) Read(ctx context.Context, db dbQueryer, ind reflect.Value, 
 	}
 
 	if DebugSQLBuilder {
-		logger.Debug(ctx, "sqlbuilder:read", "query", query, "args", args)
+		logger.Debug("sqlbuilder:read", zap.String("query", query), zap.Any("args", args))
 	}
 
 	dynColumns, containers := mi.getValueContainers(ind, mi.fields.dbcols, false)
@@ -124,7 +125,7 @@ func (mi *modelInfo) Insert(ctx context.Context, db dbQueryer, ind reflect.Value
 	query, args := builder.Build()
 
 	if DebugSQLBuilder {
-		logger.Debug(ctx, "sqlbuilder:insert", "query", query, "args", args)
+		logger.Debug("sqlbuilder:insert", zap.String("query", query), zap.Any("args", args))
 	}
 
 	result, err := db.ExecContext(ctx, query, args...)
@@ -171,7 +172,7 @@ func (mi *modelInfo) Update(ctx context.Context, db dbQueryer, ind reflect.Value
 	query, args := builder.Build()
 
 	if DebugSQLBuilder {
-		logger.Debug(ctx, "sqlbuilder:update", "query", query, "args", args)
+		logger.Debug("sqlbuilder:update", zap.String("query", query), zap.Any("args", args))
 	}
 
 	result, err := db.ExecContext(ctx, query, args...)
@@ -212,7 +213,7 @@ func (mi *modelInfo) Delete(ctx context.Context, db dbQueryer, ind reflect.Value
 	query, args := builder.Build()
 
 	if DebugSQLBuilder {
-		logger.Debug(ctx, "sqlbuilder:delete", "query", query, "args", args)
+		logger.Debug("sqlbuilder:delete", zap.String("query", query), zap.Any("args", args))
 	}
 
 	result, err := db.ExecContext(ctx, query, args...)
@@ -257,7 +258,10 @@ func (mi *modelInfo) InsertMulti(
 			query, args := builder.Build()
 
 			if DebugSQLBuilder {
-				logger.Debug(ctx, "sqlbuilder:insert_multi", "query", query, "args", args, "bulk_idx", bulkIdx)
+				logger.Debug("sqlbuilder:insert_multi",
+					zap.String("query", query),
+					zap.Any("args", args),
+					zap.Int("bulk_idx", bulkIdx))
 			}
 
 			_, err := db.ExecContext(ctx, query, args...)
@@ -295,7 +299,7 @@ func (mi *modelInfo) UpdateBatch(ctx context.Context, db dbQueryer,
 	query, args := builder.Build()
 
 	if DebugSQLBuilder {
-		logger.Debug(ctx, "sqlbuilder:update_batch", "query", query, "args", args)
+		logger.Debug("sqlbuilder:update_batch", zap.String("query", query), zap.Any("args", args))
 	}
 
 	result, err := db.ExecContext(ctx, query, args...)
@@ -318,7 +322,7 @@ func (mi *modelInfo) DeleteBatch(ctx context.Context, db dbQueryer, qs *querySet
 	query, args := builder.Build()
 
 	if DebugSQLBuilder {
-		logger.Debug(ctx, "sqlbuilder:delete_batch", "query", query, "args", args)
+		logger.Debug("sqlbuilder:delete_batch", zap.String("query", query), zap.Any("args", args))
 	}
 
 	result, err := db.ExecContext(ctx, query, args...)
@@ -398,7 +402,7 @@ func (mi *modelInfo) ReadOne(ctx context.Context, db dbQueryer, qs *querySetter,
 	query, args := mi.getQueryArgsForRead(qs, cond, selectNames)
 
 	if DebugSQLBuilder {
-		logger.Debug(ctx, "sqlbuilder:read_one", "query", query, "args", args)
+		logger.Debug("sqlbuilder:read_one", zap.String("query", query), zap.Any("args", args))
 	}
 
 	rows, err := db.QueryContext(ctx, query, args...)
@@ -468,7 +472,7 @@ func (mi *modelInfo) ReadBatch(ctx context.Context, db dbQueryer, qs *querySette
 	query, args := mi.getQueryArgsForRead(qs, cond, selectNames)
 
 	if DebugSQLBuilder {
-		logger.Debug(ctx, "sqlbuilder:read_batch", "query", query, "args", args)
+		logger.Debug("sqlbuilder:read_batch", zap.String("query", query), zap.Any("args", args))
 	}
 
 	rows, err := db.QueryContext(ctx, query, args...)
@@ -521,7 +525,7 @@ func (mi *modelInfo) Count(ctx context.Context, db dbQueryer, qs *querySetter, c
 	query, args := builder.Build()
 
 	if DebugSQLBuilder {
-		logger.Debug(ctx, "sqlbuilder:count", "query", query, "args", args)
+		logger.Debug("sqlbuilder:count", zap.String("query", query), zap.Any("args", args))
 	}
 
 	err = db.QueryRowContext(ctx, query, args...).Scan(&count)
