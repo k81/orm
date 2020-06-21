@@ -45,7 +45,7 @@ func newFieldInfo(mi *modelInfo, field reflect.Value, sf reflect.StructField, mN
 		addrField = field.Addr()
 	}
 
-	attrs, tags = parseStructTag(sf.Tag.Get(defaultStructTagName))
+	attrs, tags = parseStructTag(mi, sf.Tag.Get(defaultStructTagName))
 	if _, ok := attrs["-"]; ok {
 		return nil, errSkipField
 	}
