@@ -9,6 +9,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 )
 
 type obj struct {
@@ -355,5 +356,7 @@ func TestMain(m *testing.M) {
 	RegisterModel("default", new(anyObj))
 	RegisterModel("default", new(timeObj))
 	DebugSQLBuilder = true
+	devLogger, _ := zap.NewDevelopment()
+	SetLogger(devLogger)
 	os.Exit(m.Run())
 }
