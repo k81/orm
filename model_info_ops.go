@@ -412,6 +412,7 @@ func (mi *modelInfo) ReadOne(ctx context.Context, db dbQueryer, qs *querySetter,
 	// nolint:errcheck
 	defer rows.Close()
 
+	count := 0
 	if rows.Next() {
 		elem := reflect.New(mi.addrField.Elem().Type())
 		elemInd := reflect.Indirect(elem)
@@ -426,10 +427,15 @@ func (mi *modelInfo) ReadOne(ctx context.Context, db dbQueryer, qs *querySetter,
 		}
 
 		ind.Set(elemInd)
+		count++
 	}
 
 	if err = rows.Err(); err != nil {
 		return err
+	}
+
+	if count == 0 {
+		return ErrNoRows
 	}
 
 	return nil
