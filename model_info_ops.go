@@ -20,7 +20,7 @@ const (
 )
 
 func (mi *modelInfo) PrepareInsert(ctx context.Context, db dbQueryer, tableSuffix string) (StmtQueryer, string, error) {
-	logger := ctxzap.Extract(ctx)
+	logger := ctxzap.Extract(ctx).With(defaultLoggerTag)
 	if mi.sharded && tableSuffix == "" {
 		panic(ErrNoTableSuffix(mi.table))
 	}
@@ -62,7 +62,7 @@ func (mi *modelInfo) Read(ctx context.Context, db dbQueryer, ind reflect.Value, 
 		whereColumns []string
 		whereValues  []interface{}
 		table        = mi.getTableByInd(ind)
-		logger       = ctxzap.Extract(ctx)
+		logger       = ctxzap.Extract(ctx).With(defaultLoggerTag)
 	)
 
 	if len(whereNames) > 0 {
@@ -123,7 +123,7 @@ func (mi *modelInfo) Insert(ctx context.Context, db dbQueryer, ind reflect.Value
 		table   = mi.getTableByInd(ind)
 		values  = mi.getValues(ind, mi.fields.dbcols)
 		builder = sqlbuilder.NewInsertBuilder()
-		logger  = ctxzap.Extract(ctx)
+		logger  = ctxzap.Extract(ctx).With(defaultLoggerTag)
 	)
 
 	builder.InsertInto(quote(table)).Cols(quoteAll(mi.fields.dbcols)...).Values(values...)
@@ -150,7 +150,7 @@ func (mi *modelInfo) Update(ctx context.Context, db dbQueryer, ind reflect.Value
 
 	var (
 		setColumns []string
-		logger     = ctxzap.Extract(ctx)
+		logger     = ctxzap.Extract(ctx).With(defaultLoggerTag)
 	)
 
 	// if specify setNames length is zero, then commit all columns.
@@ -196,7 +196,7 @@ func (mi *modelInfo) Delete(ctx context.Context, db dbQueryer, ind reflect.Value
 		whereColumns []string
 		whereValues  []interface{}
 		table        = mi.getTableByInd(ind)
-		logger       = ctxzap.Extract(ctx)
+		logger       = ctxzap.Extract(ctx).With(defaultLoggerTag)
 	)
 
 	// if specify whereNames length > 0, then use it for where condition.
@@ -246,7 +246,7 @@ func (mi *modelInfo) InsertMulti(
 		builder *sqlbuilder.InsertBuilder
 		length  = sind.Len()
 		count   int64
-		logger  = ctxzap.Extract(ctx)
+		logger  = ctxzap.Extract(ctx).With(defaultLoggerTag)
 	)
 
 	if length == 0 {
@@ -292,7 +292,7 @@ func (mi *modelInfo) UpdateBatch(ctx context.Context, db dbQueryer,
 	var (
 		setNames  = make([]string, 0, len(params))
 		setValues = make([]interface{}, 0, len(params))
-		logger    = ctxzap.Extract(ctx)
+		logger    = ctxzap.Extract(ctx).With(defaultLoggerTag)
 	)
 
 	for name, value := range params {
@@ -328,7 +328,7 @@ func (mi *modelInfo) DeleteBatch(ctx context.Context, db dbQueryer, qs *querySet
 	var (
 		table   = mi.getTableBySuffix(qs.tableSuffix)
 		builder = sqlbuilder.NewDeleteBuilder()
-		logger  = ctxzap.Extract(ctx)
+		logger  = ctxzap.Extract(ctx).With(defaultLoggerTag)
 	)
 
 	builder.DeleteFrom(quote(table))
@@ -406,7 +406,7 @@ func (mi *modelInfo) getQueryArgsForRead(qs *querySetter, cond *Condition, selec
 
 // nolint:lll
 func (mi *modelInfo) ReadOne(ctx context.Context, db dbQueryer, qs *querySetter, cond *Condition, container interface{}, selectNames []string) error {
-	logger := ctxzap.Extract(ctx)
+	logger := ctxzap.Extract(ctx).With(defaultLoggerTag)
 	val := reflect.ValueOf(container)
 	ind := reflect.Indirect(val)
 
@@ -462,7 +462,7 @@ func (mi *modelInfo) ReadOne(ctx context.Context, db dbQueryer, qs *querySetter,
 
 // nolint:gocyclo,lll
 func (mi *modelInfo) ReadBatch(ctx context.Context, db dbQueryer, qs *querySetter, cond *Condition, container interface{}, selectNames []string) error {
-	logger := ctxzap.Extract(ctx)
+	logger := ctxzap.Extract(ctx).With(defaultLoggerTag)
 	val := reflect.ValueOf(container)
 	ind := reflect.Indirect(val)
 	isPtr := true
@@ -540,7 +540,7 @@ func (mi *modelInfo) ReadBatch(ctx context.Context, db dbQueryer, qs *querySette
 
 // nolint:lll
 func (mi *modelInfo) Count(ctx context.Context, db dbQueryer, qs *querySetter, cond *Condition) (count int64, err error) {
-	logger := ctxzap.Extract(ctx)
+	logger := ctxzap.Extract(ctx).With(defaultLoggerTag)
 	table := mi.getTableBySuffix(qs.tableSuffix)
 	builder := sqlbuilder.NewSelectBuilder()
 	builder.Select("COUNT(1)").From(quote(table))

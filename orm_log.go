@@ -21,7 +21,7 @@ func debugLogQueies(
 	var (
 		elapsed = int64(time.Since(t) / time.Millisecond)
 		flag    = "OK"
-		logger  = ctxzap.Extract(ctx)
+		logger  = ctxzap.Extract(ctx).With(defaultLoggerTag)
 	)
 
 	if err != nil {
