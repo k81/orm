@@ -92,7 +92,7 @@ func (o *orm) getMiInd(md interface{}, needPtr bool) (mi *modelInfo, ind reflect
 	fullName := getFullName(typ)
 	mi, ok := modelCache.get(fullName)
 	if !ok {
-		panic(fmt.Errorf("<Ormer> model `%s` not registered", fullName))
+		panic(fmt.Errorf("<Ormer> model `%v` not registered", reflect.TypeOf(md)))
 	}
 	return mi, ind
 }
