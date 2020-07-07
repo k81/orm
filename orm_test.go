@@ -357,6 +357,6 @@ func TestMain(m *testing.M) {
 	RegisterModel("default", new(timeObj))
 	DebugSQLBuilder = true
 	devLogger, _ := zap.NewDevelopment()
-	SetLogger(devLogger)
+	SetDefaultLogger(devLogger)
 	os.Exit(m.Run())
 }

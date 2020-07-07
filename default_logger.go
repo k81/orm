@@ -7,18 +7,18 @@ import (
 	"go.uber.org/zap"
 )
 
-var logger = zap.NewNop()
+var defaultLogger = zap.NewNop()
 
-// SetLogger set the orm logger
-func SetLogger(l *zap.Logger) {
-	logger = l
+// SetDefaultLogger set the orm logger
+func SetDefaultLogger(l *zap.Logger) {
+	defaultLogger = l
 }
 
 type mysqlErrLogger struct{}
 
 func (*mysqlErrLogger) Print(v ...interface{}) {
 	msg := fmt.Sprint(v...)
-	logger.Error("mysql_driver_error", zap.String("error", msg))
+	defaultLogger.Error("mysql_driver_error", zap.String("error", msg))
 }
 
 func init() {

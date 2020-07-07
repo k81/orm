@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/k81/kate/log/ctxzap"
 	"go.uber.org/zap"
 )
 
@@ -20,6 +21,7 @@ func debugLogQueies(
 	var (
 		elapsed = int64(time.Since(t) / time.Millisecond)
 		flag    = "OK"
+		logger  = ctxzap.Extract(ctx)
 	)
 
 	if err != nil {

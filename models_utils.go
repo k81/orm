@@ -93,20 +93,20 @@ func parseStructTag(mi *modelInfo, data string) (attrs map[string]bool, tags map
 
 		tagTyp, ok := supportTag[tag]
 		if !ok {
-			logger.Error("unsupport orm tag", zap.String("model", mi.fullName), zap.String("tag", v))
+			defaultLogger.Error("unsupport orm tag", zap.String("model", mi.fullName), zap.String("tag", v))
 			return
 		}
 
 		switch tagTyp {
 		case TagTypeNoArgs:
 			if args != "" {
-				logger.Error("tag not support argument", zap.String("model", mi.fullName), zap.String("tag", tag))
+				defaultLogger.Error("tag not support argument", zap.String("model", mi.fullName), zap.String("tag", tag))
 				return
 			}
 			attrs[tag] = true
 		case TagTypeWithArgs:
 			if args == "" {
-				logger.Error("tag missing argument", zap.String("model", mi.fullName), zap.String("tag", tag))
+				defaultLogger.Error("tag missing argument", zap.String("model", mi.fullName), zap.String("tag", tag))
 				return
 			}
 			tags[tag] = args

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/k81/kate/log/ctxzap"
 	"github.com/k81/orm/sqlbuilder"
 	"go.uber.org/zap"
 )
@@ -19,6 +20,7 @@ const (
 )
 
 func (mi *modelInfo) PrepareInsert(ctx context.Context, db dbQueryer, tableSuffix string) (StmtQueryer, string, error) {
+	logger := ctxzap.Extract(ctx)
 	if mi.sharded && tableSuffix == "" {
 		panic(ErrNoTableSuffix(mi.table))
 	}
@@ -60,6 +62,7 @@ func (mi *modelInfo) Read(ctx context.Context, db dbQueryer, ind reflect.Value, 
 		whereColumns []string
 		whereValues  []interface{}
 		table        = mi.getTableByInd(ind)
+		logger       = ctxzap.Extract(ctx)
 	)
 
 	if len(whereNames) > 0 {
@@ -116,9 +119,12 @@ func (mi *modelInfo) Read(ctx context.Context, db dbQueryer, ind reflect.Value, 
 }
 
 func (mi *modelInfo) Insert(ctx context.Context, db dbQueryer, ind reflect.Value) (int64, error) {
-	table := mi.getTableByInd(ind)
-	values := mi.getValues(ind, mi.fields.dbcols)
-	builder := sqlbuilder.NewInsertBuilder()
+	var (
+		table   = mi.getTableByInd(ind)
+		values  = mi.getValues(ind, mi.fields.dbcols)
+		builder = sqlbuilder.NewInsertBuilder()
+		logger  = ctxzap.Extract(ctx)
+	)
 
 	builder.InsertInto(quote(table)).Cols(quoteAll(mi.fields.dbcols)...).Values(values...)
 
@@ -142,7 +148,10 @@ func (mi *modelInfo) Update(ctx context.Context, db dbQueryer, ind reflect.Value
 		return 0, ErrMissPK
 	}
 
-	var setColumns []string
+	var (
+		setColumns []string
+		logger     = ctxzap.Extract(ctx)
+	)
 
 	// if specify setNames length is zero, then commit all columns.
 	if len(setNames) == 0 {
@@ -187,6 +196,7 @@ func (mi *modelInfo) Delete(ctx context.Context, db dbQueryer, ind reflect.Value
 		whereColumns []string
 		whereValues  []interface{}
 		table        = mi.getTableByInd(ind)
+		logger       = ctxzap.Extract(ctx)
 	)
 
 	// if specify whereNames length > 0, then use it for where condition.
@@ -236,6 +246,7 @@ func (mi *modelInfo) InsertMulti(
 		builder *sqlbuilder.InsertBuilder
 		length  = sind.Len()
 		count   int64
+		logger  = ctxzap.Extract(ctx)
 	)
 
 	if length == 0 {
@@ -278,8 +289,12 @@ func (mi *modelInfo) InsertMulti(
 
 func (mi *modelInfo) UpdateBatch(ctx context.Context, db dbQueryer,
 	qs *querySetter, cond *Condition, params Params) (int64, error) {
-	setNames := make([]string, 0, len(params))
-	setValues := make([]interface{}, 0, len(params))
+	var (
+		setNames  = make([]string, 0, len(params))
+		setValues = make([]interface{}, 0, len(params))
+		logger    = ctxzap.Extract(ctx)
+	)
+
 	for name, value := range params {
 		setNames = append(setNames, name)
 		setValues = append(setValues, value)
@@ -310,8 +325,11 @@ func (mi *modelInfo) UpdateBatch(ctx context.Context, db dbQueryer,
 }
 
 func (mi *modelInfo) DeleteBatch(ctx context.Context, db dbQueryer, qs *querySetter, cond *Condition) (int64, error) {
-	table := mi.getTableBySuffix(qs.tableSuffix)
-	builder := sqlbuilder.NewDeleteBuilder()
+	var (
+		table   = mi.getTableBySuffix(qs.tableSuffix)
+		builder = sqlbuilder.NewDeleteBuilder()
+		logger  = ctxzap.Extract(ctx)
+	)
 
 	builder.DeleteFrom(quote(table))
 
@@ -388,6 +406,7 @@ func (mi *modelInfo) getQueryArgsForRead(qs *querySetter, cond *Condition, selec
 
 // nolint:lll
 func (mi *modelInfo) ReadOne(ctx context.Context, db dbQueryer, qs *querySetter, cond *Condition, container interface{}, selectNames []string) error {
+	logger := ctxzap.Extract(ctx)
 	val := reflect.ValueOf(container)
 	ind := reflect.Indirect(val)
 
@@ -443,6 +462,7 @@ func (mi *modelInfo) ReadOne(ctx context.Context, db dbQueryer, qs *querySetter,
 
 // nolint:gocyclo,lll
 func (mi *modelInfo) ReadBatch(ctx context.Context, db dbQueryer, qs *querySetter, cond *Condition, container interface{}, selectNames []string) error {
+	logger := ctxzap.Extract(ctx)
 	val := reflect.ValueOf(container)
 	ind := reflect.Indirect(val)
 	isPtr := true
@@ -520,6 +540,7 @@ func (mi *modelInfo) ReadBatch(ctx context.Context, db dbQueryer, qs *querySette
 
 // nolint:lll
 func (mi *modelInfo) Count(ctx context.Context, db dbQueryer, qs *querySetter, cond *Condition) (count int64, err error) {
+	logger := ctxzap.Extract(ctx)
 	table := mi.getTableBySuffix(qs.tableSuffix)
 	builder := sqlbuilder.NewSelectBuilder()
 	builder.Select("COUNT(1)").From(quote(table))
