@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/k81/orm/sqlbuilder"
+	"github.com/std0d9k81/orm/sqlbuilder"
 	"github.com/stretchr/testify/assert"
 )
 

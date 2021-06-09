@@ -3,7 +3,7 @@ package orm
 import (
 	"testing"
 
-	"github.com/k81/dynamic"
+	"github.com/std0d9k81/dynamic"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 )

@@ -6,7 +6,7 @@ import (
 	"errors"
 	"reflect"
 
-	"github.com/k81/dynamic"
+	"github.com/std0d9k81/dynamic"
 )
 
 // JSONValue is the json wrapper

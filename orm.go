@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/k81/kate/log/ctxzap"
+	"github.com/std0d9k81/kate/log/ctxzap"
 	"go.uber.org/zap"
 )
 

@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/k81/kate/log/ctxzap"
-	"github.com/k81/orm/sqlbuilder"
+	"github.com/std0d9k81/kate/log/ctxzap"
+	"github.com/std0d9k81/orm/sqlbuilder"
 	"go.uber.org/zap"
 )
 
