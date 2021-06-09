@@ -1,7 +1,6 @@
 package orm
 
 import (
-	"context"
 	"os"
 	"strconv"
 	"testing"
@@ -46,12 +45,12 @@ func (p *shardedPerson) TableSuffix() string {
 func TestInsert(t *testing.T) {
 	for i := 0; i < 4; i++ {
 		tableSuffix := strconv.Itoa(i)
-		delCnt, err := NewOrm(context.TODO()).QueryTable(new(shardedPerson)).WithSuffix(tableSuffix).Delete()
+		delCnt, err := NewOrm(zap.NewExample()).QueryTable(new(shardedPerson)).WithSuffix(tableSuffix).Delete()
 		require.NoError(t, err, "delete all rows failed")
 		t.Logf("before TestInsert, rows deleted: count=%v", delCnt)
 	}
 
-	db := NewOrm(context.TODO())
+	db := NewOrm(zap.NewExample())
 	person1 := &shardedPerson{
 		PersonID: 1,
 		Name:     "zhang",
@@ -91,7 +90,7 @@ func TestInsert(t *testing.T) {
 
 	for i := 0; i < 4; i++ {
 		tableSuffix := strconv.Itoa(i)
-		delCnt, err := NewOrm(context.TODO()).QueryTable(new(shardedPerson)).WithSuffix(tableSuffix).Delete()
+		delCnt, err := NewOrm(zap.NewExample()).QueryTable(new(shardedPerson)).WithSuffix(tableSuffix).Delete()
 		require.NoError(t, err, "delete all rows failed")
 		t.Logf("after TestInsert, rows deleted: count=%v", delCnt)
 	}
@@ -105,7 +104,7 @@ func TestRead(t *testing.T) {
 	}
 
 	// insert person
-	db := NewOrm(context.TODO())
+	db := NewOrm(zap.NewExample())
 	id, err := db.Insert(personAdd)
 	require.NoError(t, err, "insert person failed")
 
@@ -142,7 +141,7 @@ func TestUpdate(t *testing.T) {
 	}
 
 	// insert person
-	db := NewOrm(context.TODO())
+	db := NewOrm(zap.NewExample())
 	id, err := db.Insert(personAdd)
 	require.NoError(t, err, "insert person failed")
 	require.Equal(t, id, personAdd.ID)
@@ -175,7 +174,7 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestQueryTable(t *testing.T) {
-	db := NewOrm(context.TODO())
+	db := NewOrm(zap.NewExample())
 	_, err := db.QueryTable(new(shardedPerson)).WithSuffix("0").Delete()
 	require.NoError(t, err, "clean person table")
 
@@ -252,7 +251,7 @@ func TestQueryTable(t *testing.T) {
 }
 
 func TestJsonOmit(t *testing.T) {
-	db := NewOrm(context.TODO())
+	db := NewOrm(zap.NewExample())
 	db.QueryTable(new(anyObj)).Delete()
 
 	obj := &anyObj{
@@ -265,7 +264,7 @@ func TestJsonOmit(t *testing.T) {
 }
 
 func TestMultiDBSameTable(t *testing.T) {
-	db := NewOrm(context.TODO())
+	db := NewOrm(zap.NewExample())
 	o1 := &anyObj{
 		ID:      1,
 		ObjOmit: obj{"", 1},
@@ -305,7 +304,7 @@ func TestMultiDBSameTable(t *testing.T) {
 }
 
 func TestRawQueryRows(t *testing.T) {
-	db := NewOrm(context.TODO())
+	db := NewOrm(zap.NewExample())
 	db.QueryTable(new(anyObj)).Delete()
 
 	obj := &anyObj{
@@ -333,7 +332,7 @@ func (*timeObj) TableName() string {
 }
 
 func TestTime(t *testing.T) {
-	db := NewOrm(context.TODO())
+	db := NewOrm(zap.NewExample())
 	obj := &timeObj{
 		ObjTime: time.Now(),
 	}

@@ -1,11 +1,11 @@
 package orm
 
 import (
-	"context"
 	"testing"
 
 	"github.com/k81/dynamic"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 )
 
 type aData struct {
@@ -45,7 +45,7 @@ func TestJSON(t *testing.T) {
 	//aRawContent := `{"type": "a", "content": {"value": 10}}`
 	//bRawContent := `{"type": "b", "content": {"items": [1,3,5]}}`
 
-	db := NewOrm(context.TODO())
+	db := NewOrm(zap.NewExample())
 	db.QueryTable(new(jsonModel)).Delete()
 
 	aObj := &jsonModel{
@@ -110,7 +110,7 @@ func (*mapJsonModel) TableName() string {
 }
 
 func TestJSONMap(t *testing.T) {
-	db := NewOrm(context.TODO())
+	db := NewOrm(zap.NewExample())
 	db.QueryTable(new(mapJsonModel)).Delete()
 
 	content := map[string]interface{}{

@@ -7,6 +7,9 @@ import (
 	"fmt"
 	"reflect"
 	"time"
+
+	"github.com/k81/kate/log/ctxzap"
+	"go.uber.org/zap"
 )
 
 // Define common vars
@@ -53,7 +56,7 @@ type Ormer interface {
 	Using(name string)
 	// begin transaction
 	// for example:
-	// 	o := NewOrm()
+	// 	o := NewOrm(logger)
 	// 	err := o.Begin()
 	// 	...
 	// 	err = o.Rollback()
@@ -302,11 +305,11 @@ func (o *orm) RollbackIfNotCommitted() {
 }
 
 // NewOrm create a new orm object.
-func NewOrm(ctx context.Context) Ormer {
+func NewOrm(logger *zap.Logger) Ormer {
 	BootStrap() // execute only once
 
 	o := new(orm)
-	o.ctx = ctx
+	o.ctx = ctxzap.ToContext(context.TODO(), logger)
 	o.Using("default")
 	return o
 }

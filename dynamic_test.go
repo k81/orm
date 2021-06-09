@@ -1,11 +1,11 @@
 package orm
 
 import (
-	"context"
 	"testing"
 
 	"github.com/k81/dynamic"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 )
 
 type aDynContent struct {
@@ -37,7 +37,7 @@ func (m *dynamicModel) NewDynamicField(name string) interface{} {
 }
 
 func TestDynamic(t *testing.T) {
-	db := NewOrm(context.TODO())
+	db := NewOrm(zap.NewExample())
 	db.QueryTable(new(dynamicModel)).Delete()
 
 	aObj := &dynamicModel{
