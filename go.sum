@@ -29,13 +29,6 @@ github.com/google/renameio v0.1.0/go.mod h1:KWCgfxg9yswjAJkECMjeO8J8rahYeXnNhOm4
 github.com/hashicorp/hcl v1.0.0/go.mod h1:E5yfLk+7swimpb2L/Alb/PJmXilQ/rhwaUYs4T20WEQ=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
 github.com/julienschmidt/httprouter v1.3.0/go.mod h1:JR6WtHb+2LUe8TCKY3cZOxFyyO8IZAc4RVcycCCAKdM=
-github.com/std0d9k81/dynamic v1.0.1 h1:5EF9xOa2xdE+gF8eLrWTEZbC1/fAp3JhPKiiGw5DGXQ=
-github.com/std0d9k81/dynamic v1.0.1/go.mod h1:VS9fAPtGnmoCPu6OrMavWLFEacaONTE00sgWRlgOOt0=
-github.com/std0d9k81/govalidator v1.0.1/go.mod h1:h1aTZFJvtIdGPzXNs9y8D1SVNET/nwAdFr+PshnNk5o=
-github.com/std0d9k81/kate v1.1.35 h1:afQsXA2k8YEMm4NDqBi61W87G99dSndbBeOjrMR2L/I=
-github.com/std0d9k81/kate v1.1.35/go.mod h1:RcZxaSdlrybb5fuMsNxNau5QLW87/rR44faAqjarq+E=
-github.com/std0d9k81/orm v1.0.8/go.mod h1:BX0bgV08kvNDcAGLImsqIlR9UvLxsva7ThqbhhFwLxM=
-github.com/std0d9k81/retry v1.0.1/go.mod h1:iuFaMJI7rqvsMfKX4wEYdiRvqYYG0XM5iPYSOzl08aY=
 github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0/go.mod h1:1NbS8ALrpOvjt0rHPNLyCIeMtbizbir8U//inJ+zuB8=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
